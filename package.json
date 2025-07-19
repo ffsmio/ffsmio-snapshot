@@ -1,0 +1,101 @@
+{
+  "name": "@ffsm/snapshot",
+  "version": "1.0.0",
+  "description": "React snapshot utilities for capturing and measuring DOM elements",
+  "keywords": [
+    "react",
+    "snapshot",
+    "dom",
+    "measure",
+    "utilities",
+    "typescript"
+  ],
+  "homepage": "https://github.com/ffsmio/ffsmio-snapshot#readme",
+  "bugs": {
+    "url": "https://github.com/ffsmio/ffsmio-snapshot/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ffsmio/ffsmio-snapshot.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "FFSM Team",
+    "email": "s3tech.vn@gmail.com"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "scripts": {
+    "build": "yarn clean && rollup -c",
+    "build:dev": "rollup -c --environment NODE_ENV:development",
+    "build:prod": "yarn clean && rollup -c --environment NODE_ENV:production",
+    "clean": "rimraf dist",
+    "dev": "rollup -c --watch",
+    "watch": "rollup -c --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublishOnly": "yarn build:prod && yarn typecheck",
+    "prepack": "yarn build:prod",
+    "postpack": "yarn clean"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.esm.js",
+      "default": "./dist/index.esm.js"
+    },
+    "./use-snapshot": {
+      "types": "./dist/use-snapshot.d.ts",
+      "require": "./dist/use-snapshot.js",
+      "import": "./dist/use-snapshot.esm.js",
+      "default": "./dist/use-snapshot.esm.js"
+    },
+    "./with-snapshot": {
+      "types": "./dist/with-snapshot.d.ts",
+      "require": "./dist/with-snapshot.js",
+      "import": "./dist/with-snapshot.esm.js",
+      "default": "./dist/with-snapshot.esm.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": false
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@rollup/plugin-alias": "^5.1.1",
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.4",
+    "@types/node": "^24.0.15",
+    "@types/react": "^19.1.8",
+    "glob": "^11.0.3",
+    "react": "^19.1.0",
+    "rimraf": "^6.0.1",
+    "rollup": "^4.0.0",
+    "tslib": "^2.8.1",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@ffsm/requester": "^1.0.1"
+  }
+}
