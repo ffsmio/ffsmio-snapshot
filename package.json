@@ -1,6 +1,6 @@
 {
   "name": "@ffsm/snapshot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "React snapshot utilities for capturing and measuring DOM elements",
   "keywords": [
     "react",
@@ -66,6 +66,12 @@
       "require": "./dist/with-snapshot.js",
       "import": "./dist/with-snapshot.esm.js",
       "default": "./dist/with-snapshot.esm.js"
+    },
+    "./snapshot": {
+      "types": "./dist/snapshot.d.ts",
+      "require": "./dist/snapshot.js",
+      "import": "./dist/snapshot.esm.js",
+      "default": "./dist/snapshot.esm.js"
     },
     "./package.json": "./package.json"
   },

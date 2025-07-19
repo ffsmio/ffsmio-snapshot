@@ -1,5 +1,6 @@
 import { ComponentType, DetailedHTMLProps, HTMLAttributes, useState } from "react";
-import { SnapshotError, SnapshotSize, useSnapshot, UseSnapshotOptions } from "./use-snapshot";
+import { SnapshotError, SnapshotSize } from "./use-snapshot";
+import { Snapshot, WithSnapshotOptions } from "./snapshot";
 
 /**
  * Interface for components that can receive container props
@@ -14,7 +15,7 @@ export interface PropsWithContainer {
  * Props type that includes snapshot data for enhanced components
  * @template P - Original component props type
  */
-export type WithSnapshotProps<P> = P & {
+export type WithSnapshotProps<P = {}> = P & {
   /** Current measured dimensions of the parent element, null if measurement failed */
   snapshot?: SnapshotSize | null;
   /** Current error state, null if no error occurred */
@@ -87,29 +88,32 @@ export type WithSnapshotProps<P> = P & {
  * const SimpleEnhanced = withSnapshot(MyComponent);
  * ```
  */
-export function withSnapshot<P extends PropsWithContainer>(Component: ComponentType<WithSnapshotProps<P>>, options?: UseSnapshotOptions) {
-  return function WithSnapshot(props: P) {
+export function withSnapshot<P extends PropsWithContainer>(Component: ComponentType<WithSnapshotProps<P>>, options?: WithSnapshotOptions) {
+  const WithSnapshot = function WithSnapshot(props: P) {
     const { containerProps = {}, ...remain } = props;
-  
     const [snapshot, setSnapshot] = useState<SnapshotSize | null>(null);
     const [error, setError] = useState<SnapshotError | null>(null);
 
-    const ref = useSnapshot(
-      (size, error) => {
+    const snapshotOptions: WithSnapshotOptions = {
+      ...options,
+      onSnapshot: options?.onSnapshot || ((size, error) => {
         setSnapshot(size);
         setError(error);
-      },
-      options
-    );
+      })
+    };
 
     return (
-      <div {...containerProps} ref={ref}>
+      <Snapshot {...containerProps} options={snapshotOptions}>
         <Component
           {...remain as P}
           snapshot={snapshot}
           error={error}
         />
-      </div>
+      </Snapshot>
     );
-  }
+  };
+
+  WithSnapshot.displayName = `WithSnapshot(${Component.displayName || Component.name || 'Component'})`;
+  return WithSnapshot;
 }
+

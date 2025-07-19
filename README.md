@@ -46,12 +46,41 @@ function MyComponent() {
 }
 ```
 
+### Snapshot Component
+
+```tsx
+import { Snapshot } from '@ffsm/snapshot';
+
+function MyComponent() {
+  return (
+    <Snapshot
+      options={{
+        onSnapshot: (size, error) => {
+          if (error) {
+            console.error('Measurement failed:', error);
+          } else if (size) {
+            console.log(`Measured: ${size.width}x${size.height}`);
+          }
+        },
+        delay: 100,
+        observer: true
+      }}
+      style={{ border: '1px solid #ccc', padding: '10px' }}
+    >
+      <h1>Content to measure</h1>
+      <p>This container will be measured automatically</p>
+    </Snapshot>
+  );
+}
+```
+
 ### Simple Usage
 
 ```tsx
-import { useSnapshot } from '@ffsm/snapshot';
+import { useSnapshot, Snapshot } from '@ffsm/snapshot';
 
-function SimpleComponent() {
+// Hook approach
+function SimpleHook() {
   const ref = useSnapshot((size, error) => {
     if (size) {
       console.log(`Size: ${size.width}x${size.height}`);
@@ -59,6 +88,15 @@ function SimpleComponent() {
   });
 
   return <div ref={ref}>Content</div>;
+}
+
+// Component approach
+function SimpleComponent() {
+  return (
+    <Snapshot options={{ onSnapshot: (size) => console.log(size) }}>
+      <div>Content</div>
+    </Snapshot>
+  );
 }
 ```
 
@@ -127,10 +165,28 @@ Hook for measuring DOM element dimensions with automatic retry and resize observ
 
 - `containerRef: RefObject<HTMLDivElement>` - Ref to attach to the element (parent will be measured)
 
-#### Error Types
+### Snapshot Component
 
-- `SnapshotError.PARENT_NOT_FOUND` - Parent element not found in DOM
-- `SnapshotError.INVALID_SIZE` - Element size is below the specified bounds
+React component that automatically measures its dimensions and provides them via callback.
+
+#### Props
+
+- `options?: WithSnapshotOptions` - Configuration options for measurement
+  - `onSnapshot?: (size: SnapshotSize | null, error: SnapshotError | null) => void` - Measurement callback
+  - All other options from `UseSnapshotOptions`
+- `...divProps` - All standard HTML div attributes (className, style, etc.)
+- `children` - Content to be wrapped and measured
+
+#### Usage
+
+```tsx
+<Snapshot 
+  options={{ onSnapshot: (size) => console.log(size) }}
+  className="my-wrapper"
+>
+  Content to measure
+</Snapshot>
+```
 
 ### withSnapshot(Component, options?)
 
@@ -139,7 +195,7 @@ Higher-order component for adding snapshot functionality to React components.
 #### Parameters
 
 - `Component: ComponentType<WithSnapshotProps<P>>` - Component to enhance
-- `options?: UseSnapshotOptions` - Same options as useSnapshot hook
+- `options?: WithSnapshotOptions` - Same options as useSnapshot hook plus onSnapshot callback
 
 #### Enhanced Component Props
 
@@ -147,6 +203,11 @@ The wrapped component receives additional props:
 - `snapshot?: SnapshotSize | null` - Current measured dimensions
 - `error?: SnapshotError | null` - Current error state
 - `containerProps?: HTMLAttributes<HTMLDivElement>` - Props for the wrapper container
+
+#### Error Types
+
+- `SnapshotError.PARENT_NOT_FOUND` - Parent element not found in DOM
+- `SnapshotError.INVALID_SIZE` - Element size is below the specified bounds
 
 ## License
 
