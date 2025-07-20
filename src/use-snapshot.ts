@@ -19,6 +19,8 @@ export interface UseSnapshotOptions {
   delay?: number;
   /** Minimum width required for valid measurements (default: 320) */
   lowerWidthBound?: number;
+  /** Minimum height required for valid measurements (default: 0) */
+  lowerHeightBound?: number;
   /** Number of retry attempts for measurements (default: 1) */
   retryInit?: number;
   /** Whether the hook is in loading state */
@@ -29,6 +31,8 @@ export interface UseSnapshotOptions {
   observer?: boolean;
   /** Callback function called on retry attempts */
   onRetry?(): void;
+  /** Custom validation function for size measurements - return true if size is valid */
+  validate?(size: SnapshotSize): boolean;
 }
 
 /**
@@ -74,14 +78,39 @@ export type SnapshotMeasured = (size: SnapshotSize | null, error: SnapshotError 
  *     {
  *       delay: 100,
  *       lowerWidthBound: 300,
+ *       lowerHeightBound: 200,
  *       retryInit: 3,
  *       observer: true,
- *       onRetry: () => console.log('Retrying measurement...')
+ *       onRetry: () => console.log('Retrying measurement...'),
+ *       validate: (size) => size.width >= 300 && size.height >= 200
  *     }
  *   );
  * 
  *   return <div ref={containerRef}>Content to measure</div>;
  * }
+ * ```
+ * 
+ * @example
+ * ```tsx
+ * // With height validation and custom validation
+ * const ref = useSnapshot(
+ *   (size, error) => {
+ *     if (error) {
+ *       console.error('Failed:', error);
+ *     } else {
+ *       console.log('Valid size:', size);
+ *     }
+ *   },
+ *   {
+ *     lowerWidthBound: 320,
+ *     lowerHeightBound: 240,
+ *     validate: (size) => {
+ *       // Custom validation: aspect ratio should be between 4:3 and 16:9
+ *       const ratio = size.width / size.height;
+ *       return ratio >= 4/3 && ratio <= 16/9;
+ *     }
+ *   }
+ * );
  * ```
  * 
  * @example
@@ -96,15 +125,35 @@ export function useSnapshot(measured: SnapshotMeasured, options: UseSnapshotOpti
   const {
     delay = 0,
     lowerWidthBound = 320,
+    lowerHeightBound = 0,
     retryInit = 1,
     loading = false,
     error = null,
     onRetry,
+    validate,
     observer: isObserver = true
   } = options;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const retryCount = useRef(0);
+
+  const validateSize = useCallback((size: SnapshotSize) => {
+    const minHeight = Math.max(lowerHeightBound, 0);
+
+    if (size.width < lowerWidthBound) {
+      return false;
+    }
+
+    if (minHeight > 0 && size.height < minHeight) {
+      return false;
+    }
+
+    if (typeof validate === "function") {
+      return validate(size);
+    }
+
+    return true;
+  }, [lowerWidthBound, lowerHeightBound, validate]);
 
   const measure = useCallback(() => {
     const parent = containerRef.current?.parentElement;
@@ -117,7 +166,7 @@ export function useSnapshot(measured: SnapshotMeasured, options: UseSnapshotOpti
     const width = parent.clientWidth;
     const height = parent.clientHeight;
 
-    if (width >= lowerWidthBound) {
+    if (validateSize({ width, height })) {
       measured({ width, height }, null);
     } else if (retryCount.current < retryInit) {
       retryCount.current++;
@@ -126,7 +175,7 @@ export function useSnapshot(measured: SnapshotMeasured, options: UseSnapshotOpti
     } else {
       measured(null, SnapshotError.INVALID_SIZE);
     }
-  }, [delay, lowerWidthBound, retryInit, measured, onRetry]);
+  }, [delay, retryInit, measured, onRetry, validateSize]);
 
   useEffect(() => {
     retryCount.current = 0;

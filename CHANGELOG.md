@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-01-20
+
+### Added
+- **lowerHeightBound option**: New configuration option to set minimum height requirements
+- **Custom validation function**: `validate` option allows custom size validation logic
+- **Enhanced validation**: Support for complex validation scenarios (aspect ratio, area, etc.)
+- **Advanced examples**: Updated documentation with custom validation examples
+
+### Enhanced
+- **Size validation logic**: More flexible validation with both width and height bounds
+- **Better error handling**: Improved validation feedback and error messages
+- **Documentation**: Comprehensive examples showing new validation features
+
+### Developer Experience
+- **TypeScript support**: Enhanced type definitions for new options
+- **Flexible API**: More ways to validate element dimensions
+- **Better debugging**: Custom validation functions provide clearer validation logic
+
 ## [1.1.0] - 2025-01-20
 
 ### Added

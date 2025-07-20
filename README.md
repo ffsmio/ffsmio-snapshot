@@ -36,9 +36,15 @@ function MyComponent() {
     {
       delay: 100,
       lowerWidthBound: 300,
+      lowerHeightBound: 200,
       retryInit: 3,
       observer: true,
-      onRetry: () => console.log('Retrying measurement...')
+      onRetry: () => console.log('Retrying measurement...'),
+      validate: (size) => {
+        // Custom validation: ensure aspect ratio is reasonable
+        const ratio = size.width / size.height;
+        return ratio >= 1.0 && ratio <= 3.0;
+      }
     }
   );
 
@@ -98,6 +104,31 @@ function SimpleComponent() {
     </Snapshot>
   );
 }
+
+// Advanced validation example
+function ValidatedComponent() {
+  const ref = useSnapshot(
+    (size, error) => {
+      if (error) {
+        console.error('Validation failed:', error);
+      } else if (size) {
+        console.log('Valid dimensions:', size);
+      }
+    },
+    {
+      lowerWidthBound: 400,
+      lowerHeightBound: 300,
+      validate: (size) => {
+        // Custom validation: minimum area and reasonable aspect ratio
+        const area = size.width * size.height;
+        const ratio = size.width / size.height;
+        return area >= 120000 && ratio >= 0.75 && ratio <= 2.0;
+      }
+    }
+  );
+
+  return <div ref={ref}>Content with custom validation</div>;
+}
 ```
 
 ### withSnapshot HOC
@@ -124,7 +155,9 @@ function MyComponent({ snapshot, error, containerProps }) {
 const EnhancedComponent = withSnapshot(MyComponent, {
   delay: 100,
   lowerWidthBound: 300,
-  observer: true
+  lowerHeightBound: 200,
+  observer: true,
+  validate: (size) => size.width > size.height // Only landscape orientations
 });
 
 // Usage
@@ -155,11 +188,13 @@ Hook for measuring DOM element dimensions with automatic retry and resize observ
 - `options?: UseSnapshotOptions` (optional)
   - `delay?: number` - Delay in milliseconds before taking measurements (default: 0)
   - `lowerWidthBound?: number` - Minimum width required for valid measurements (default: 320)
+  - `lowerHeightBound?: number` - Minimum height required for valid measurements (default: 0)
   - `retryInit?: number` - Number of retry attempts (default: 1)
   - `loading?: boolean` - Whether the hook is in loading state
   - `error?: SnapshotError | null` - Current error state
   - `observer?: boolean` - Use ResizeObserver for automatic re-measurements (default: true)
   - `onRetry?: () => void` - Callback function called on retry attempts
+  - `validate?: (size: SnapshotSize) => boolean` - Custom validation function for size measurements
 
 #### Returns
 
